@@ -6,7 +6,16 @@ set(cmake_export_compile_commands on)
 add_executable(gol src/main.c src/glad.c)
 
 link_directories(${CMAKE_SOURCE_DIR}/include/)
-include_directories(gol PRIVATE ${CMAKE_SOURCE_DIR}/include/ ${CMAKE_SOURCE_DIR}/rendering/)
+include_directories(gol ${CMAKE_SOURCE_DIR}/include/ ${CMAKE_SOURCE_DIR}/rendering/ ${CMAKE_SOURCE_DIR}/game_of_life/)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/rendering/)
+add_subdirectory(${CMAKE_SOURCE_DIR}/game_of_life/)
 
 target_link_libraries(gol PUBLIC rendering)
+target_link_libraries(gol PRIVATE GAME_OF_LIFE)
+
+option(game_of_life_tests "Compile tests for game of life library.")
+
+if (game_of_life_tests)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/unity)
+endif()
