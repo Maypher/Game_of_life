@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "unity.h"
@@ -13,14 +14,14 @@ void test_create_game_of_life() {
     GameOfLife game;
     create_game_of_life(width, height, &game);
 
-    Tile *tiles = malloc(width * height * sizeof(Tile));
+    Cell *cells = malloc(width * height * sizeof(Cell));
 
     for (int i = 0; i < width * height; i++) {
-        tiles[i].alive = 0;
-        tiles[i].hovered = 0;
+        cells[i].alive = 0;
+        cells[i].hovered = 0;
     }
 
-    GameOfLife true_game = {width, height, tiles = tiles};
+    GameOfLife true_game = {width, height, cells = cells};
 
     TEST_ASSERT_EQUAL_INT_MESSAGE(width, game.width,
                                   "Created game width doesn't match");
@@ -31,10 +32,10 @@ void test_create_game_of_life() {
     TEST_ASSERT_EQUAL_INT_MESSAGE(height, true_game.height,
                                   "True game height doesn't match");
 
-    TEST_ASSERT_EQUAL_INT_ARRAY_MESSAGE(true_game.tiles, game.tiles,
-                                        width * height, "Tiles don't match");
+    TEST_ASSERT_EQUAL_INT_ARRAY_MESSAGE(true_game.cells, game.cells,
+                                        width * height, "Cells don't match");
 
-    free(tiles);
+    free(cells);
 }
 
 void test_create_game_invalid_dimensions() {
@@ -52,36 +53,36 @@ void test_live_neighbour_count() {
     int width = (rand() % 10) + 1;  // To stop size from being 0
     int height = (rand() % 10) + 1;
 
-    // Coordinates of the tile to check for neighbours.
+    // Coordinates of the cell to check for neighbours.
     int center_x = rand() % width;
     int center_y = rand() % height;
 
     GameOfLife game;
     create_game_of_life(width, height, &game);
 
-    int tiles_flipped = 0;
+    int cells_flipped = 0;
 
     for (int x_offset = -1; x_offset <= 1; x_offset++) {
         for (int y_offset = -1; y_offset <= 1; y_offset++) {
-            // Don't flip the tile being checked for neighbours
+            // Don't flip the cell being checked for neighbours
             if (x_offset == 0 && y_offset == 0) {
                 continue;
             }
 
-            int tile_x = center_x + x_offset;
-            int tile_y = center_y + y_offset;
+            int cell_x = center_x + x_offset;
+            int cell_y = center_y + y_offset;
 
-            // Give a 50% change to flip a tile
-            if (valid_coordinate(&game, tile_x, tile_y) && rand() % 2 == 1) {
-                Tile *tile_to_flip = get_tile(&game, tile_x, tile_y);
-                flip_tile_status(tile_to_flip);
-                tiles_flipped++;
+            // Give a 50% change to flip a cell
+            if (valid_coordinate(&game, cell_x, cell_y) && rand() % 2 == 1) {
+                Cell *cell_to_flip = get_cell(&game, cell_x, cell_y);
+                flip_cell_status(cell_to_flip);
+                cells_flipped++;
             }
         }
     }
 
     TEST_ASSERT_EQUAL_INT_MESSAGE(
-        tiles_flipped, get_alive_neighbour_count(&game, center_x, center_y),
+        cells_flipped, get_alive_neighbour_count(&game, center_x, center_y),
         "Live neighbours don't match");
 }
 
