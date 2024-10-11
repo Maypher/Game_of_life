@@ -7,21 +7,24 @@
 #include "glad/glad.h"
 
 Scene *create_scene(char *vertex_shader_filename,
-                    char *fragment_shader_filename) {
+                    char *fragment_shader_filename, int width, int height) {
+    // Single quad vertices
     const float QUAD_VERTICES[] = {-1.0, 1.0,  0.0, 1.0, 1.0,  0.0,
                                    -1.0, -1.0, 0.0, 1.0, -1.0, 0.0};
     const int INDICES[] = {0, 1, 2, 1, 2, 3};
 
-    unsigned int vbo;
+    unsigned int vbo;  // Vertex buffer object (Stores vertices data)
     glGenBuffers(1, &vbo);
 
     unsigned int ebo;  // Element buffer object (Stores indices)
     glGenBuffers(1, &ebo);
 
-    unsigned int vao;
+    unsigned int vao;  // Vertex attribute object (Stores all data related to a
+                       // given vbo)
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
+    // Bind vbo and pass the vertices data
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTICES), QUAD_VERTICES,
                  GL_STATIC_DRAW);
@@ -29,6 +32,7 @@ Scene *create_scene(char *vertex_shader_filename,
                           (void *)0);
     glEnableVertexAttribArray(0);
 
+    // Bing ebo and pass all the indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(INDICES), INDICES,
                  GL_STATIC_DRAW);
@@ -36,6 +40,7 @@ Scene *create_scene(char *vertex_shader_filename,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    // Load shaders
     const char *vertex_source = get_shader_content(vertex_shader_filename);
     const char *fragment_source = get_shader_content(fragment_shader_filename);
 
@@ -62,6 +67,7 @@ Scene *create_scene(char *vertex_shader_filename,
         printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", infoLog);
     }
 
+    // Creates the program and binds the shaders
     unsigned int program = glCreateProgram();
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
@@ -70,6 +76,16 @@ Scene *create_scene(char *vertex_shader_filename,
     glDeleteShader(fragment_shader);
     glDeleteShader(vertex_shader);
 
+    // Sends the game dimensions to the shader
+    glUseProgram(program);
+    unsigned int dimensions[] = {width, height};
+    int game_dimensions_location =
+        glGetUniformLocation(program, "game_dimensions");
+    glUniform2uiv(game_dimensions_location, 1, dimensions);
+
+    glUseProgram(0);
+
+    // Creates the scene and stores all data related to it
     Scene *scene = (Scene *)malloc(sizeof(Scene));
 
     scene->VAO = vao;
@@ -109,4 +125,7 @@ void draw_game(Scene *scene, GameOfLife *game) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    glUseProgram(0);
+    glBindVertexArray(0);
 }

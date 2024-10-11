@@ -9,7 +9,7 @@ typedef struct {
 } Scene;
 
 Scene *create_scene(char *vertex_shader_filename,
-                    char *fragment_shader_filename);
+                    char *fragment_shader_filename, int widht, int height);
 
 char *get_shader_content(const char *fileName);
 
