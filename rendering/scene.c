@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wctype.h>
 
+#include "game_of_life.h"
 #include "glad/glad.h"
 
 Scene *create_scene(char *vertex_shader_filename,
@@ -15,6 +17,13 @@ Scene *create_scene(char *vertex_shader_filename,
 
     unsigned int vbo;  // Vertex buffer object (Stores vertices data)
     glGenBuffers(1, &vbo);
+
+    unsigned int instance_buffer;
+    glGenBuffers(1, &instance_buffer);
+
+    unsigned int
+        instance_vertex_object;  // Stores cell state for every instance
+    glGenBuffers(1, &instance_vertex_object);
 
     unsigned int ebo;  // Element buffer object (Stores indices)
     glGenBuffers(1, &ebo);
@@ -36,6 +45,17 @@ Scene *create_scene(char *vertex_shader_filename,
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(INDICES), INDICES,
                  GL_STATIC_DRAW);
+
+    // Buffer to store the instance data for a cell
+    glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
+    glBufferData(GL_ARRAY_BUFFER, width * height * sizeof(Cell), NULL,
+                 GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 1, GL_INT, GL_FALSE, sizeof(Cell), (void *)0);
+    glVertexAttribDivisor(1, 1);
+
+    glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(Cell),
+                          (void *)offsetof(Cell, hovered));
+    glVertexAttribDivisor(2, 1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -89,6 +109,7 @@ Scene *create_scene(char *vertex_shader_filename,
     Scene *scene = (Scene *)malloc(sizeof(Scene));
 
     scene->VAO = vao;
+    scene->instance_vertex_obj = instance_buffer;
     scene->program = program;
 
     return scene;
@@ -101,6 +122,7 @@ char *get_shader_content(const char *fileName) {
 
     /* Read File to get size */
     fp = fopen(fileName, "rb");
+
     if (fp == NULL) {
         return "";
     }
@@ -120,11 +142,20 @@ char *get_shader_content(const char *fileName) {
 void draw_game(Scene *scene, GameOfLife *game) {
     glUseProgram(scene->program);
     glBindVertexArray(scene->VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, scene->instance_vertex_obj);
+
+    int game_size = game->width * game->height;
+
+    glBufferData(GL_ARRAY_BUFFER, game_size * sizeof(Cell), game->cells,
+                 GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, game_size);
 
     glUseProgram(0);
     glBindVertexArray(0);

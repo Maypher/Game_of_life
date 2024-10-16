@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "game_of_life.h"
 #include "glad/glad.h"
@@ -35,7 +36,17 @@ int main(int argc, char *argv[]) {
                                 "./shaders/fragment.glsl", width, height);
 
     GameOfLife game;
-    create_game_of_life(600, 800, &game);
+    create_game_of_life(width, height, &game);
+
+    srand(time(NULL));
+
+    for (int i = 0; i < width * height; i++) {
+        double rand_val = (double)rand() / (double)RAND_MAX;
+
+        if (rand_val < 0.5) {
+            game.cells[i].alive = 1;
+        }
+    }
 
     while (!glfwWindowShouldClose(window)) {
         process_input(window);

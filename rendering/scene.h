@@ -5,6 +5,7 @@
 
 typedef struct {
     unsigned int VAO;  // vertex array object (stores all data related to a VBO)
+    unsigned int instance_vertex_obj;
     unsigned int program;
 } Scene;
 
