@@ -4,8 +4,9 @@
 #define INVALID_BOARD_SIZE -1
 
 typedef struct {
-    int alive;
-    int hovered;
+    unsigned int id;
+    unsigned int alive;
+    unsigned int hovered;
 } Cell;
 
 typedef struct {

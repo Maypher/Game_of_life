@@ -23,9 +23,11 @@ int create_game_of_life(unsigned int width, unsigned int height,
     game_of_life.cells_buffer = (Cell*)malloc(width * height * sizeof(Cell));
 
     for (int i = 0; i < width * height; i++) {
+        game_of_life.cells[i].id = i;
         game_of_life.cells[i].alive = 0;
         game_of_life.cells[i].hovered = 0;
 
+        game_of_life.cells_buffer[i].id = i;
         game_of_life.cells_buffer[i].alive = 0;
         game_of_life.cells_buffer[i].hovered = 0;
     }

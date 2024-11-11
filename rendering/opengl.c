@@ -13,6 +13,13 @@ void process_input(GLFWwindow *window) {
     }
 }
 
+static void cursor_position_callback(GLFWwindow *window, double xpos,
+                                     double ypos) {
+    unsigned int active_cell;
+    glReadPixels(xpos, ypos, 1, 1, GL_RED, GL_UNSIGNED_INT, &active_cell);
+    printf("Active cell id: %i", active_cell);
+}
+
 GLFWwindow *init_opengl() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
